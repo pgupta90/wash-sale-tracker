@@ -86,3 +86,11 @@ def test_search_trades_returns_empty_for_unknown_symbol(tmp_path):
     init_db(db_path)
     results = search_trades('ZZZZ', None, None, db_path)
     assert results == []
+
+def test_search_trades_excludes_trades_older_than_30_days(tmp_path):
+    db_path = str(tmp_path / "test.sqlite")
+    init_db(db_path)
+    old_trade = {**STOCK_TRADE, 'id': 'old-1', 'executed_at': '2020-01-01T10:00:00+00:00'}
+    upsert_trade(old_trade, db_path)
+    results = search_trades('META', None, None, db_path)
+    assert results == []

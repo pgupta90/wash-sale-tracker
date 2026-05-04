@@ -81,6 +81,8 @@ def search_trades(
     strike: Optional[float],
     db_path: str = DB_PATH,
 ) -> list:
+    # SQLite compares lexicographically; this works because Robinhood timestamps
+    # are UTC ISO 8601 strings (e.g. '2026-04-20T10:00:00Z') which sort correctly.
     query = """
         SELECT * FROM trades
         WHERE symbol = ?
