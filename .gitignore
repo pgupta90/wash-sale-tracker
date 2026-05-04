@@ -1,0 +1,9 @@
+config.yaml
+*.pickle
+__pycache__/
+*.pyc
+.pytest_cache/
+backend/db.sqlite
+node_modules/
+frontend/dist/
+.env
