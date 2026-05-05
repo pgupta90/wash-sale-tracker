@@ -10,10 +10,14 @@ from backend.auth import login_from_config
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()  # Fatal if DB unavailable — intentionally unguarded
-    try:
-        login_from_config()
-    except Exception as e:
-        print(f"Warning: Could not auto-login on startup: {e}")
+    # Login using saved session from ~/.tokens/robinhood.pickle (set up by backend/authenticate.py)
+    result = login_from_config()
+    if not result.get('authenticated'):
+        print()
+        print("WARNING: Not authenticated with Robinhood.")
+        print("Run this once to set up your session:")
+        print("  python3 backend/authenticate.py")
+        print()
     yield
 
 app = FastAPI(title='WashSaleApp', lifespan=lifespan)
