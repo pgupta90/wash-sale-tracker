@@ -12,7 +12,7 @@ def test_login_success():
         username='test@test.com',
         password='pass',
         store_session=True,
-        by_sms=True,
+        by_sms=False,
     )
 
 def test_login_failure_returns_error():

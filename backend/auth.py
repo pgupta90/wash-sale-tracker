@@ -5,7 +5,7 @@ from backend.config import load_config
 def login(username: str, password: str) -> dict:
     """Login to Robinhood. robin_stocks prompts for MFA on the CLI automatically."""
     try:
-        r.login(username=username, password=password, store_session=True, by_sms=True)
+        r.login(username=username, password=password, store_session=True, by_sms=False)
         r.account.load_account_profile()
         return {'authenticated': True}
     except Exception as e:
