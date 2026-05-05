@@ -26,5 +26,5 @@ def get_auth_status() -> dict:
     try:
         r.account.load_account_profile()
         return {'authenticated': True}
-    except Exception:
-        return {'authenticated': False}
+    except Exception as e:
+        return {'authenticated': False, 'error': str(e)}
