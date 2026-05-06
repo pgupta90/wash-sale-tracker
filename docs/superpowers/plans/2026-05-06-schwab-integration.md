@@ -1112,6 +1112,16 @@ git commit -m "feat: add Schwab sync row to SyncBar with independent sync state"
 
 ---
 
+## Execution Options
+
+**Recommended: Option 1 — Subagent-Driven Development**
+Use `superpowers:subagent-driven-development`. Fresh subagent per task + spec and quality review between tasks. Best for this plan because 9 tasks accumulate context noise in a single session, and the two-stage review catches field-mapping mistakes (e.g. wrong Schwab response key) before they compound across tasks.
+
+**Option 2 — Inline Execution**
+Use `superpowers:executing-plans`. Runs all tasks in this session with checkpoints. Fine for smaller plans; for 9 tasks the context overhead can cause drift in later tasks.
+
+---
+
 ## After All Tasks: One-Time Schwab Setup
 
 Once implementation is complete, run the auth script to connect your Schwab account:
