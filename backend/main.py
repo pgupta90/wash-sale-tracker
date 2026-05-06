@@ -19,6 +19,13 @@ async def lifespan(app: FastAPI):
         print("Run this once to set up your session:")
         print("  python3 backend/authenticate.py")
         print()
+    schwab_result = get_schwab_status()
+    if not schwab_result.get('authenticated'):
+        print()
+        print("WARNING: Not authenticated with Schwab.")
+        print("Run this once to set up your session:")
+        print("  python3.11 backend/schwab_authenticate.py")
+        print()
     yield
 
 app = FastAPI(title='WashSaleApp', lifespan=lifespan)
