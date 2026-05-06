@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from backend.database import upsert_trade
 from backend.schwab_auth import get_schwab_client
+from schwab.client import Client
 
 SYNC_DAYS = 60
 
@@ -22,8 +23,14 @@ def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def _parse_close_time(value: str) -> datetime:
-    return datetime.fromisoformat(value.replace('+0000', '+00:00'))
+def _parse_close_time(value: str):
+    if not value:
+        return None
+    try:
+        dt = datetime.fromisoformat(value.replace('Z', '+00:00').replace('+0000', '+00:00'))
+        return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+    except ValueError:
+        return None
 
 
 def sync_schwab_orders(client=None, db_path: str = None) -> int:
@@ -37,9 +44,10 @@ def sync_schwab_orders(client=None, db_path: str = None) -> int:
 
     acct_resp = client.get_account_numbers()
     accounts = acct_resp.json()
+    if not accounts:
+        return 0
     account_hash = accounts[0]['hashValue']
 
-    from schwab.client import Client
     orders_resp = client.get_orders_for_account(
         account_hash=account_hash,
         from_entered_datetime=cutoff,
@@ -47,14 +55,16 @@ def sync_schwab_orders(client=None, db_path: str = None) -> int:
         status=Client.Order.Status.FILLED,
     )
     orders = orders_resp.json()
-
     count = 0
+    if not orders:
+        return count
+
     for order in orders:
         close_time = order.get('closeTime')
         if not close_time:
             continue
         executed_dt = _parse_close_time(close_time)
-        if executed_dt < cutoff:
+        if not executed_dt or executed_dt < cutoff:
             continue
 
         trade_price = 0.0
@@ -79,13 +89,13 @@ def sync_schwab_orders(client=None, db_path: str = None) -> int:
                 'trade_type': 'option' if asset_type == 'OPTION' else 'stock',
                 'option_type': put_call.lower() if put_call else None,
                 'strategy': None,
-                'side': INSTRUCTION_MAP.get(instruction, 'buy'),
+                'side': INSTRUCTION_MAP.get(instruction, instruction.lower()),
                 'expiration_date': instrument.get('expirationDate'),
                 'strike_price': float(instrument['strikePrice']) if instrument.get('strikePrice') else None,
                 'trade_price': trade_price,
-                'quantity': float(order.get('filledQuantity', 0)),
+                'quantity': float(leg.get('quantity', order.get('filledQuantity', 0))),
                 'status': 'closed' if order.get('status') == 'FILLED' else 'open',
-                'executed_at': close_time,
+                'executed_at': executed_dt.isoformat(),
                 'synced_at': _now_iso(),
             }
             upsert_trade(trade, **kwargs)

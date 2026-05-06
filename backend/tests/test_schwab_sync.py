@@ -125,3 +125,31 @@ def test_sync_schwab_skips_old_orders(tmp_path):
     client = _make_client([old_order])
     count = sync_schwab_orders(client=client, db_path=db_path)
     assert count == 0
+
+
+def test_sync_schwab_multi_leg_order(tmp_path):
+    db_path = str(tmp_path / 'test.sqlite')
+    init_db(db_path)
+    multi_leg_order = {
+        'orderId': 44444,
+        'status': 'FILLED',
+        'filledQuantity': 2.0,
+        'closeTime': '2026-04-22T10:00:00+0000',
+        'orderLegCollection': [
+            {'instruction': 'BUY', 'quantity': 1.0, 'instrument': {'symbol': 'AAPL', 'assetType': 'EQUITY'}},
+            {'instruction': 'SELL', 'quantity': 1.0, 'instrument': {'symbol': 'MSFT', 'assetType': 'EQUITY'}},
+        ],
+        'orderActivityCollection': [{'executionType': 'FILL', 'executionLegs': [{'price': 100.0, 'quantity': 2.0}]}],
+    }
+    client = _make_client([multi_leg_order])
+    count = sync_schwab_orders(client=client, db_path=db_path)
+    assert count == 2
+    with get_connection(db_path) as conn:
+        row0 = conn.execute("SELECT * FROM trades WHERE id='schwab-44444-0'").fetchone()
+        row1 = conn.execute("SELECT * FROM trades WHERE id='schwab-44444-1'").fetchone()
+    assert row0['symbol'] == 'AAPL'
+    assert row0['side'] == 'buy'
+    assert row0['quantity'] == 1.0
+    assert row1['symbol'] == 'MSFT'
+    assert row1['side'] == 'sell'
+    assert row1['quantity'] == 1.0
