@@ -6,6 +6,7 @@ from backend.routes.sync import router as sync_router
 from backend.routes.trades import router as trades_router
 from backend.database import init_db
 from backend.auth import login_from_config
+from backend.schwab_auth import get_schwab_status
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
