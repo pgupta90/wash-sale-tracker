@@ -18,6 +18,18 @@ export async function triggerSync() {
   return res.json();
 }
 
+export async function getSchwabSyncStatus() {
+  const res = await fetch(`${BASE}/sync/schwab/status`);
+  if (!res.ok) throw new Error('Failed to fetch Schwab sync status');
+  return res.json();
+}
+
+export async function triggerSchwabSync() {
+  const res = await fetch(`${BASE}/sync/schwab`, { method: 'POST' });
+  if (!res.ok) throw new Error('Schwab sync failed');
+  return res.json();
+}
+
 export async function searchTrades({ symbol, expiry, strike }) {
   const params = new URLSearchParams({ symbol });
   if (expiry) params.set('expiry', expiry);
