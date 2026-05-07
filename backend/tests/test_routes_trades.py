@@ -29,10 +29,11 @@ def test_get_trades_returns_results():
 
 def test_get_trades_passes_all_filters():
     client = get_client()
-    with patch('backend.routes.trades.search_trades', return_value=[]) as mock_search:
+    with patch('backend.routes.trades.search_trades', return_value=[]) as mock_search, \
+         patch('backend.routes.trades.load_config', return_value={'settings': {'search_days': 30}}):
         client.get('/trades?symbol=META&expiry=2026-06-20&strike=600.0')
     mock_search.assert_called_once_with(
-        symbol='META', expiry='2026-06-20', strike=600.0
+        symbol='META', expiry='2026-06-20', strike=600.0, search_days=30
     )
 
 def test_get_trades_empty_result():

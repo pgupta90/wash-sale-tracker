@@ -1,5 +1,7 @@
 config.yaml
 *.pickle
+*.json.token
+~/.tokens/
 __pycache__/
 *.pyc
 .pytest_cache/
@@ -7,3 +9,5 @@ backend/db.sqlite
 node_modules/
 frontend/dist/
 .env
+.DS_Store
+.claude/

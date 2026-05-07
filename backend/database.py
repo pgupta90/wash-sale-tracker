@@ -93,14 +93,15 @@ def search_trades(
     symbol: str,
     expiry: Optional[str],
     strike: Optional[float],
+    search_days: int = 30,
     db_path: str = DB_PATH,
 ) -> list:
-    # SQLite compares lexicographically; this works because Robinhood timestamps
-    # are UTC ISO 8601 strings (e.g. '2026-04-20T10:00:00Z') which sort correctly.
-    query = """
+    # SQLite compares lexicographically; this works because timestamps
+    # are UTC ISO 8601 strings which sort correctly.
+    query = f"""
         SELECT * FROM trades
         WHERE symbol = ?
-        AND executed_at >= datetime('now', '-365 days')
+        AND executed_at >= datetime('now', '-{int(search_days)} days')
     """
     params: list = [symbol.upper()]
     if expiry:

@@ -4,7 +4,7 @@ export default function TradesTable({ trades, symbol }) {
   if (trades.length === 0) {
     return (
       <div className="trades-empty">
-        No trades found for <strong>{symbol}</strong> in the last 30 days.
+        No trades found for <strong>{symbol}</strong>.
       </div>
     );
   }
@@ -12,7 +12,7 @@ export default function TradesTable({ trades, symbol }) {
   return (
     <div className="trades-section">
       <p className="trades-count">
-        {trades.length} trade{trades.length !== 1 ? 's' : ''} in the last 30 days
+        {trades.length} trade{trades.length !== 1 ? 's' : ''} found
       </p>
       <div className="table-scroll">
         <table className="trades-table">

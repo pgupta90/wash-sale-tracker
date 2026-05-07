@@ -30,9 +30,10 @@ export default function SearchFilters({ onSearch }) {
       <label className="filter-group">
         <span>Expiry</span>
         <input
-          type="date"
+          type="text"
           value={expiry}
           onChange={e => setExpiry(e.target.value)}
+          placeholder="YYYY-MM-DD"
         />
       </label>
       <label className="filter-group">
