@@ -21,7 +21,7 @@ export default function TradesTable({ trades, symbol }) {
               <th>Symbol</th><th>Platform</th><th>Trade Type</th>
               <th>Option Type</th><th>Strategy</th><th>Side</th>
               <th>Expiry</th><th>Strike</th><th>Trade Price</th>
-              <th>Qty</th><th>Status</th><th>Date</th>
+              <th>Qty</th><th>Status</th><th>Trade Open Date</th>
             </tr>
           </thead>
           <tbody>

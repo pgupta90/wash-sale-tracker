@@ -46,10 +46,10 @@ def test_sync_stock_orders_maps_status(tmp_path):
          patch('backend.sync.r.helper.request_get', return_value=MOCK_INSTRUMENT):
         sync_stock_orders(db_path=db_path)
     with get_connection(db_path) as conn:
-        filled = conn.execute("SELECT status FROM trades WHERE id='stock-1'").fetchone()
-        cancelled = conn.execute("SELECT status FROM trades WHERE id='stock-2'").fetchone()
-    assert filled['status'] == 'closed'
-    assert cancelled['status'] == 'closed'
+        buy_trade = conn.execute("SELECT status FROM trades WHERE id='stock-1'").fetchone()
+        sell_trade = conn.execute("SELECT status FROM trades WHERE id='stock-2'").fetchone()
+    assert buy_trade['status'] == 'open'
+    assert sell_trade['status'] == 'closed'
 
 def test_sync_stock_orders_no_duplicates(tmp_path):
     db_path = str(tmp_path / "test.sqlite")
