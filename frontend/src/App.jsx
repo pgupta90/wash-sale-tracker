@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import AuthBar from './components/AuthBar';
+import RobinhoodModal from './components/RobinhoodModal';
 import SyncBar from './components/SyncBar';
 import SearchFilters from './components/SearchFilters';
 import TradesTable from './components/TradesTable';
@@ -10,6 +12,33 @@ export default function App() {
   const [lastSymbol, setLastSymbol] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showRobinhoodModal, setShowRobinhoodModal] = useState(false);
+  const [schwabConnecting, setSchwabConnecting] = useState(false);
+  const [toast, setToast] = useState(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('schwab') === 'connected') {
+      setToast({ type: 'success', message: 'Schwab connected successfully!' });
+      setSchwabConnecting(false);
+      params.delete('schwab');
+      const newUrl = window.location.pathname + (params.toString() ? `?${params}` : '');
+      window.history.replaceState({}, '', newUrl);
+    } else if (params.get('schwab') === 'error') {
+      const reason = params.get('reason') || 'Unknown error';
+      setToast({ type: 'error', message: `Schwab connection failed: ${reason}` });
+      params.delete('schwab');
+      params.delete('reason');
+      const newUrl = window.location.pathname + (params.toString() ? `?${params}` : '');
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!toast) return;
+    const id = setTimeout(() => setToast(null), 5000);
+    return () => clearTimeout(id);
+  }, [toast]);
 
   async function handleSearch({ symbol, expiry, strike }) {
     setLoading(true);
@@ -29,15 +58,32 @@ export default function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>Wash Sale Checker</h1>
+        <div className="app-header-title-row">
+          <h1>Wash Sale Checker</h1>
+        </div>
+        <AuthBar
+          onConnectRobinhood={() => setShowRobinhoodModal(true)}
+          schwabConnecting={schwabConnecting}
+          onSchwabConnectInitiated={() => setSchwabConnecting(true)}
+        />
       </header>
+
+      {toast && (
+        <div className={`toast toast-${toast.type}`}>{toast.message}</div>
+      )}
+
       <SyncBar />
+
       <main className="app-main">
         <SearchFilters onSearch={handleSearch} />
         {loading && <p className="loading">Searching...</p>}
         {error && <p className="error">{error}</p>}
         {!loading && <TradesTable trades={trades} symbol={lastSymbol} />}
       </main>
+
+      {showRobinhoodModal && (
+        <RobinhoodModal onClose={() => setShowRobinhoodModal(false)} />
+      )}
     </div>
   );
 }
