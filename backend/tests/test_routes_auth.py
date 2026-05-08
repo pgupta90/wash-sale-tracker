@@ -35,7 +35,12 @@ def test_schwab_connect_returns_url(mock_config):
     assert 'dummy_client_id' in data['url']
 
 def test_schwab_callback_success_redirects(mock_config):
+    import backend.routes.auth as auth_module
     client = get_client(follow_redirects=False)
+
+    test_state = 'test_state_value'
+    auth_module._pending_states.add(test_state)
+
     mock_token = {
         'access_token': 'tok_abc',
         'refresh_token': 'ref_abc',
@@ -51,17 +56,28 @@ def test_schwab_callback_success_redirects(mock_config):
         mock_resp.raise_for_status.return_value = None
         mock_post.return_value = mock_resp
 
-        resp = client.get('/auth/schwab/callback?code=abc123')
+        resp = client.get(f'/auth/schwab/callback?code=abc123&state={test_state}')
 
     assert resp.status_code in (302, 307)
     assert 'schwab=connected' in resp.headers['location']
 
-def test_schwab_callback_failure_redirects_with_error(mock_config):
+def test_schwab_callback_rejects_invalid_state(mock_config):
     client = get_client(follow_redirects=False)
+    resp = client.get('/auth/schwab/callback?code=abc123&state=invalid_state')
+    assert resp.status_code in (302, 307)
+    assert 'schwab=error' in resp.headers['location']
+
+def test_schwab_callback_failure_redirects_with_error(mock_config):
+    import backend.routes.auth as auth_module
+    client = get_client(follow_redirects=False)
+
+    test_state = 'test_state_failure'
+    auth_module._pending_states.add(test_state)
+
     with patch('backend.routes.auth.httpx.post') as mock_post, \
          patch('backend.routes.auth.os.makedirs'):
         mock_post.side_effect = Exception('token exchange failed')
-        resp = client.get('/auth/schwab/callback?code=bad')
+        resp = client.get(f'/auth/schwab/callback?code=bad&state={test_state}')
 
     assert resp.status_code in (302, 307)
     assert 'schwab=error' in resp.headers['location']

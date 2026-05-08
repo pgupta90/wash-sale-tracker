@@ -25,7 +25,6 @@ body { font-family: system-ui, -apple-system, 'Inter', sans-serif; background: #
 /* ── Auth Bar ── */
 .auth-bar {
   display: flex;
-  gap: 0;
   padding: 0 20px 12px;
   flex-wrap: wrap;
   gap: 0 32px;
