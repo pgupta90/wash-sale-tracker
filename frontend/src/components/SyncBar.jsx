@@ -4,6 +4,13 @@ import {
   getSchwabSyncStatus, triggerSchwabSync,
 } from '../api';
 
+const STALE_MS = 24 * 60 * 60 * 1000;
+
+function isStale(lastSynced) {
+  if (!lastSynced) return false;
+  return Date.now() - new Date(lastSynced).getTime() > STALE_MS;
+}
+
 function PlatformSyncRow({ name, getStatus, triggerSync: doSync }) {
   const [syncState, setSyncState] = useState({ status: 'idle', last_synced: null });
   const [loading, setLoading] = useState(false);
@@ -25,18 +32,25 @@ function PlatformSyncRow({ name, getStatus, triggerSync: doSync }) {
     }
   }
 
-  const timestampText = syncState.last_synced
-    ? `Last synced: ${new Date(syncState.last_synced).toLocaleString()}`
-    : 'Never synced';
+  const stale = isStale(syncState.last_synced);
+
+  let timestampText;
+  if (syncState.status === 'syncing') {
+    timestampText = 'Syncing...';
+  } else if (syncState.last_synced) {
+    timestampText = `Last synced: ${new Date(syncState.last_synced).toLocaleString()}`;
+  } else {
+    timestampText = 'Never synced';
+  }
 
   return (
     <div className="sync-bar-row">
       <span className="sync-platform">{name}</span>
-      <span className="sync-timestamp">
-        {syncState.status === 'syncing' ? 'Syncing...' : timestampText}
+      <span className={`sync-timestamp${stale ? ' sync-timestamp-stale' : ''}`}>
+        {timestampText}{stale ? ' ⚠️' : ''}
       </span>
       {syncState.status === 'error' && (
-        <span className="sync-error"> — Error: {syncState.error}</span>
+        <span className="sync-error"> — {syncState.error}</span>
       )}
       <button className="sync-button" onClick={handleSync} disabled={loading}>
         {loading ? '⟳ Syncing...' : 'Sync Now'}
