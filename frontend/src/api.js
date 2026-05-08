@@ -18,6 +18,16 @@ export async function getSchwabConnectUrl() {
   return res.json();
 }
 
+export async function submitSchwabManualCallback(url) {
+  const res = await fetch(`${BASE}/auth/schwab/manual-callback`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url }),
+  });
+  if (!res.ok) throw new Error('Manual callback failed');
+  return res.json();
+}
+
 export async function getSyncStatus() {
   const res = await fetch(`${BASE}/sync/status`);
   if (!res.ok) throw new Error('Failed to fetch sync status');

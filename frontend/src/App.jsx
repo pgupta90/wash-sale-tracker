@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import AuthBar from './components/AuthBar';
 import RobinhoodModal from './components/RobinhoodModal';
+import SchwabPasteModal from './components/SchwabPasteModal';
 import SyncBar from './components/SyncBar';
 import SearchFilters from './components/SearchFilters';
 import TradesTable from './components/TradesTable';
@@ -13,7 +14,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showRobinhoodModal, setShowRobinhoodModal] = useState(false);
-  const [schwabConnecting, setSchwabConnecting] = useState(false);
+  const [showSchwabPasteModal, setShowSchwabPasteModal] = useState(false);
   const [toast, setToast] = useState(null);
 
   useEffect(() => {
@@ -63,8 +64,8 @@ export default function App() {
         </div>
         <AuthBar
           onConnectRobinhood={() => setShowRobinhoodModal(true)}
-          schwabConnecting={schwabConnecting}
-          onSchwabConnectInitiated={() => setSchwabConnecting(true)}
+          schwabConnecting={false}
+          onSchwabConnectInitiated={() => setShowSchwabPasteModal(true)}
         />
       </header>
 
@@ -83,6 +84,16 @@ export default function App() {
 
       {showRobinhoodModal && (
         <RobinhoodModal onClose={() => setShowRobinhoodModal(false)} />
+      )}
+
+      {showSchwabPasteModal && (
+        <SchwabPasteModal
+          onClose={() => setShowSchwabPasteModal(false)}
+          onSuccess={() => {
+            setShowSchwabPasteModal(false);
+            setToast({ type: 'success', message: 'Schwab connected successfully!' });
+          }}
+        />
       )}
     </div>
   );

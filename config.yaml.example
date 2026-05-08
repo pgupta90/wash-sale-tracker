@@ -5,7 +5,7 @@ robinhood:
 schwab:
   client_id: your_schwab_app_key_here
   client_secret: your_schwab_secret_here
-  redirect_uri: http://localhost:8000/auth/schwab/callback
+  redirect_uri: https://127.0.0.1
 
 settings:
   search_days: 30

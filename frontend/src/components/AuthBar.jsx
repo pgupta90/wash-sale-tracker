@@ -36,8 +36,8 @@ export default function AuthBar({ onConnectRobinhood, schwabConnecting, onSchwab
   async function handleConnectSchwab() {
     try {
       const { url } = await getSchwabConnectUrl();
+      window.open(url, '_blank');
       if (onSchwabConnectInitiated) onSchwabConnectInitiated();
-      window.location.href = url;
     } catch (err) {
       console.error('Failed to get Schwab connect URL', err);
     }

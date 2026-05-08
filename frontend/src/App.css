@@ -301,3 +301,11 @@ body { font-family: system-ui, -apple-system, 'Inter', sans-serif; background: #
 }
 .modal-done-btn:hover:not(:disabled) { background: #00b004; }
 .modal-done-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.modal-url-input {
+  width: 100%; margin-top: 10px; padding: 8px 10px;
+  border: 1px solid #ddd; border-radius: 6px;
+  font-size: 0.82rem; font-family: 'SF Mono', 'Fira Mono', monospace;
+  outline: none;
+}
+.modal-url-input:focus { border-color: #00c805; }
