@@ -6,6 +6,18 @@ export async function getAuthStatus() {
   return res.json();
 }
 
+export async function getSchwabAuthStatus() {
+  const res = await fetch(`${BASE}/auth/schwab/status`);
+  if (!res.ok) throw new Error('Failed to fetch Schwab auth status');
+  return res.json();
+}
+
+export async function getSchwabConnectUrl() {
+  const res = await fetch(`${BASE}/auth/schwab/connect`);
+  if (!res.ok) throw new Error('Failed to get Schwab connect URL');
+  return res.json();
+}
+
 export async function getSyncStatus() {
   const res = await fetch(`${BASE}/sync/status`);
   if (!res.ok) throw new Error('Failed to fetch sync status');
