@@ -34,11 +34,14 @@ function PlatformAuthRow({ name, getStatus, onConnectClick, isConnecting }) {
 
 export default function AuthBar({ onConnectRobinhood, schwabConnecting, onSchwabConnectInitiated }) {
   async function handleConnectSchwab() {
+    // Open the tab immediately on user gesture — popup blockers reject window.open after async gaps
+    const newTab = window.open('', '_blank');
     try {
       const { url } = await getSchwabConnectUrl();
-      window.open(url, '_blank');
+      newTab.location.href = url;
       if (onSchwabConnectInitiated) onSchwabConnectInitiated();
     } catch (err) {
+      if (newTab) newTab.close();
       console.error('Failed to get Schwab connect URL', err);
     }
   }
