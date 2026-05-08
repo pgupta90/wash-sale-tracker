@@ -18,15 +18,6 @@ def _parse_dt(value: str):
     except ValueError:
         return None
 
-STATUS_MAP = {
-    'filled': 'closed',
-    'cancelled': 'closed',
-    'rejected': 'closed',
-    'confirmed': 'open',
-    'unconfirmed': 'open',
-    'partially_filled': 'open',
-}
-
 def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
@@ -55,6 +46,7 @@ def sync_stock_orders(db_path: str = None) -> int:
             'strike_price': None,
             'trade_price': float(order['average_price']),
             'quantity': float(order['quantity']),
+            # Robinhood doesn't allow direct short selling, so buy = opened long, sell = closed long
             'status': 'open' if order['side'] == 'buy' else 'closed',
             'executed_at': order['last_transaction_at'],
             'synced_at': _now_iso(),
@@ -104,7 +96,12 @@ def sync_option_orders(db_path: str = None) -> int:
                 'strike_price': float(instrument['strike_price']) if instrument.get('strike_price') else None,
                 'trade_price': float(order['price']) if order.get('price') else 0.0,
                 'quantity': float(order['quantity']),
-                'status': 'open' if leg.get('position_effect') == 'open' else 'closed',
+                # position_effect = 'open' → this leg opened a new position (buy-to-open / sell-to-open)
+                # position_effect = 'close' → this leg closed an existing position (sell-to-close / buy-to-close)
+                # Works for all strategies: single calls/puts, spreads, iron condors, butterflies, straddles
+                # All legs in a multi-leg order share the same position_effect direction.
+                # Fall back to opening_strategy presence if field is missing.
+                'status': 'open' if (leg.get('position_effect') == 'open' or (leg.get('position_effect') is None and order.get('opening_strategy'))) else 'closed',
                 'executed_at': order['created_at'],
                 'synced_at': _now_iso(),
             }
