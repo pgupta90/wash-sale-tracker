@@ -20,9 +20,3 @@ def mock_config():
          patch('backend.routes.auth.load_config', return_value=DUMMY_CONFIG):
         yield DUMMY_CONFIG
 
-
-@pytest.fixture
-def mock_config_no_route_patch():
-    """Patches load_config at the config module level only."""
-    with patch('backend.config.load_config', return_value=DUMMY_CONFIG):
-        yield DUMMY_CONFIG

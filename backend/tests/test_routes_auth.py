@@ -32,6 +32,7 @@ def test_schwab_connect_returns_url(mock_config):
     assert 'url' in data
     assert 'api.schwabapi.com' in data['url']
     assert 'response_type=code' in data['url']
+    assert 'dummy_client_id' in data['url']
 
 def test_schwab_callback_success_redirects(mock_config):
     client = get_client(follow_redirects=False)
@@ -42,8 +43,9 @@ def test_schwab_callback_success_redirects(mock_config):
         'expires_in': 1800,
     }
     with patch('backend.routes.auth.httpx.post') as mock_post, \
-         patch('builtins.open', create=True), \
-         patch('backend.routes.auth.os.makedirs'):
+         patch('backend.routes.auth.open', create=True), \
+         patch('backend.routes.auth.os.makedirs'), \
+         patch('backend.routes.auth.os.replace'):
         mock_resp = MagicMock()
         mock_resp.json.return_value = mock_token
         mock_resp.raise_for_status.return_value = None

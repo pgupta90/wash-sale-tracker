@@ -2,7 +2,7 @@ import os
 import json
 import time
 import base64
-from urllib.parse import urlencode
+from urllib.parse import urlencode, quote_plus
 
 import httpx
 from fastapi import APIRouter
@@ -68,13 +68,15 @@ def schwab_callback(code: str, session: str = None):
         resp.raise_for_status()
         token_data = resp.json()
     except Exception as e:
-        safe = str(e).replace(' ', '+')
-        return RedirectResponse(f'{FRONTEND_URL}?schwab=error&reason={safe}')
+        safe = quote_plus(str(e))
+        return RedirectResponse(f'{FRONTEND_URL}?schwab=error&reason={safe}', status_code=302)
 
     token_data['expires_at'] = time.time() + token_data.get('expires_in', 1800)
 
     os.makedirs(os.path.dirname(TOKEN_PATH), exist_ok=True)
-    with open(TOKEN_PATH, 'w') as f:
+    tmp = TOKEN_PATH + '.tmp'
+    with open(tmp, 'w') as f:
         json.dump(token_data, f)
+    os.replace(tmp, TOKEN_PATH)
 
-    return RedirectResponse(f'{FRONTEND_URL}?schwab=connected')
+    return RedirectResponse(f'{FRONTEND_URL}?schwab=connected', status_code=302)
