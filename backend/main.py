@@ -23,7 +23,7 @@ app = FastAPI(title='WashSaleApp', lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['http://localhost:5173'],
+    allow_origins=[f'http://localhost:{p}' for p in range(5173, 5180)],
     allow_methods=['*'],
     allow_headers=['*'],
 )
