@@ -6,25 +6,16 @@ from backend.routes.sync import router as sync_router
 from backend.routes.trades import router as trades_router
 from backend.database import init_db
 from backend.auth import login_from_config
-from backend.schwab_auth import get_schwab_status
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()  # Fatal if DB unavailable — intentionally unguarded
-    # Login using saved session from ~/.tokens/robinhood.pickle (set up by backend/authenticate.py)
     result = login_from_config()
     if not result.get('authenticated'):
         print()
         print("WARNING: Not authenticated with Robinhood.")
         print("Run this once to set up your session:")
         print("  python3 backend/authenticate.py")
-        print()
-    schwab_result = get_schwab_status()
-    if not schwab_result.get('authenticated'):
-        print()
-        print("WARNING: Not authenticated with Schwab.")
-        print("Run this once to set up your session:")
-        print("  python3.11 backend/schwab_authenticate.py")
         print()
     yield
 

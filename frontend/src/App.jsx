@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import AuthBar from './components/AuthBar';
 import RobinhoodModal from './components/RobinhoodModal';
-import SchwabPasteModal from './components/SchwabPasteModal';
 import SyncBar from './components/SyncBar';
 import SearchFilters from './components/SearchFilters';
 import TradesTable from './components/TradesTable';
@@ -14,26 +13,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showRobinhoodModal, setShowRobinhoodModal] = useState(false);
-  const [showSchwabPasteModal, setShowSchwabPasteModal] = useState(false);
   const [toast, setToast] = useState(null);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('schwab') === 'connected') {
-      setToast({ type: 'success', message: 'Schwab connected successfully!' });
-      setSchwabConnecting(false);
-      params.delete('schwab');
-      const newUrl = window.location.pathname + (params.toString() ? `?${params}` : '');
-      window.history.replaceState({}, '', newUrl);
-    } else if (params.get('schwab') === 'error') {
-      const reason = params.get('reason') || 'Unknown error';
-      setToast({ type: 'error', message: `Schwab connection failed: ${reason}` });
-      params.delete('schwab');
-      params.delete('reason');
-      const newUrl = window.location.pathname + (params.toString() ? `?${params}` : '');
-      window.history.replaceState({}, '', newUrl);
-    }
-  }, []);
 
   useEffect(() => {
     if (!toast) return;
@@ -62,11 +42,7 @@ export default function App() {
         <div className="app-header-title-row">
           <h1>Wash Sale Checker</h1>
         </div>
-        <AuthBar
-          onConnectRobinhood={() => setShowRobinhoodModal(true)}
-          schwabConnecting={false}
-          onSchwabConnectInitiated={() => setShowSchwabPasteModal(true)}
-        />
+        <AuthBar onConnectRobinhood={() => setShowRobinhoodModal(true)} />
       </header>
 
       {toast && (
@@ -84,16 +60,6 @@ export default function App() {
 
       {showRobinhoodModal && (
         <RobinhoodModal onClose={() => setShowRobinhoodModal(false)} />
-      )}
-
-      {showSchwabPasteModal && (
-        <SchwabPasteModal
-          onClose={() => setShowSchwabPasteModal(false)}
-          onSuccess={() => {
-            setShowSchwabPasteModal(false);
-            setToast({ type: 'success', message: 'Schwab connected successfully!' });
-          }}
-        />
       )}
     </div>
   );

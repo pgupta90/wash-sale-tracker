@@ -75,20 +75,6 @@ def set_last_synced(timestamp: str, db_path: str = DB_PATH) -> None:
             ON CONFLICT(key) DO UPDATE SET value=excluded.value
         """, (timestamp,))
 
-def get_schwab_last_synced(db_path: str = DB_PATH) -> Optional[str]:
-    with get_connection(db_path) as conn:
-        row = conn.execute(
-            "SELECT value FROM sync_meta WHERE key = 'schwab_last_synced'"
-        ).fetchone()
-        return row['value'] if row else None
-
-def set_schwab_last_synced(timestamp: str, db_path: str = DB_PATH) -> None:
-    with get_connection(db_path) as conn:
-        conn.execute("""
-            INSERT INTO sync_meta (key, value) VALUES ('schwab_last_synced', ?)
-            ON CONFLICT(key) DO UPDATE SET value=excluded.value
-        """, (timestamp,))
-
 def search_trades(
     symbol: str,
     expiry: Optional[str],
