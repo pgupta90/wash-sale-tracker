@@ -9,9 +9,11 @@ A personal tool to look up recent Robinhood trade history so you can avoid wash 
 ## Features
 
 - Sync stock and options orders from **Robinhood**
-- Search trades by **symbol**, **expiry date**, and **strike price**
+- Search trades by **symbol**, **expiry date** (date picker), and **strike price**
 - Color-coded results table — buy/sell, open/closed, call/put at a glance
+- Supported strategies: `single`, `call_spread`, `put_spread`, `iron_condor`, `iron_butterfly`
 - Configurable search window (default: last 365 days)
+- **Demo mode** — run without a Robinhood account using pre-loaded sample data
 
 ---
 
@@ -46,6 +48,19 @@ npm --version
 
 ---
 
+## Demo (no Robinhood account needed)
+
+To explore the app with pre-loaded sample data:
+
+```bash
+cd WashSaleCheckerDemo
+bash startWashSaleCheckerDemo.sh
+```
+
+Open the URL printed by Vite (usually `http://localhost:5173`). Try searching: **AAPL**, **NVDA**, **META** (wash sale examples), **SPY** (iron condor), **QQQ** (iron butterfly), **AMZN**, **MSFT**, **TSLA**.
+
+---
+
 ## Quickstart
 
 ### 1. Clone the repo
@@ -77,7 +92,7 @@ settings:
 ### 3. Run the start script
 
 ```bash
-bash start.sh
+bash startWashSaleChecker.sh
 ```
 
 The script will, in order:
@@ -118,26 +133,28 @@ Click **Sync Now** at the top of the page to pull fresh trade data. The sync fet
 
 Enter a ticker symbol (required) and optionally filter by:
 
-- **Expiry** — options expiration date in `YYYY-MM-DD` format (paste directly from the results table)
+- **Expiry** — use the date picker; the label updates to show the selected date (e.g. "Expiry — Aug 21, 2026"). Click × to clear.
 - **Strike** — options strike price
 
 Results show all matching trades within your configured `search_days` window.
 
 ### Results table
 
+A date range header shows the span of trades returned (e.g. "Trades between Feb 3, 2026 – Apr 28, 2026").
+
 | Column | Description |
 |---|---|
 | Symbol | Ticker |
 | Trade Type | `stock` or `option` |
-| Option Type | `call` / `put` badge |
-| Strategy | e.g. `single`, `iron_condor` |
-| Side | `buy` (green) / `sell` (red) |
-| Expiry | Options expiration date |
+| Option / Strategy | Option type (`call`/`put`) and strategy badge (`single`, `call_spread`, `iron_condor`, `iron_butterfly`, …) |
+| Action | `Buy`, `Sell`, `Buy to Open`, `Sell to Close`, etc. |
 | Strike | Options strike price |
-| Trade Price | Execution price |
-| Qty | Number of shares or contracts |
-| Status | `open` (bold) or `closed` (dimmed) |
-| Date | Execution date |
+| Trade Price | Execution price (premium for options, share price for stocks) |
+| Qty | Shares or contracts |
+| Status | `open` or `closed` |
+| Realized G/L | Computed gain/loss on closed positions |
+| Trade Open Date | Execution date |
+| Expiry | Options expiration date |
 
 ### Changing the search window
 
@@ -153,7 +170,13 @@ settings:
 ## Project Structure
 
 ```
-start.sh               # One-command startup script
+startWashSaleChecker.sh     # One-command startup (requires Robinhood credentials)
+
+WashSaleCheckerDemo/        # Standalone demo — no credentials needed
+  backend/                  # FastAPI + SQLite with pre-seeded dummy data (port 8001)
+  frontend/                 # React + Vite (shares same UI components)
+  config.yaml               # Demo config (search_days: 365, dummy credentials)
+  startWashSaleCheckerDemo.sh
 
 backend/
   authenticate.py      # One-time Robinhood auth script
