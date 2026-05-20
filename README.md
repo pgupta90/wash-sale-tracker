@@ -12,7 +12,7 @@ A personal tool to look up recent Robinhood trade history so you can avoid wash 
 - Search trades by **symbol**, **expiry date** (date picker), and **strike price**
 - Color-coded results table — buy/sell, open/closed, call/put at a glance
 - Supported strategies: `single`, `call_spread`, `put_spread`, `iron_condor`, `iron_butterfly`
-- Configurable search window (default: last 365 days)
+- Configurable search window (default: last 30 days)
 - **Demo mode** — run without a Robinhood account using pre-loaded sample data
 
 ---
