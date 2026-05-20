@@ -84,7 +84,7 @@ robinhood:
   password: your_password
 
 settings:
-  search_days: 365    # how many days back to search
+  search_days: 30    # how many days back to search
 ```
 
 > `config.yaml` is gitignored and never committed.
@@ -175,7 +175,7 @@ startWashSaleChecker.sh     # One-command startup (requires Robinhood credential
 WashSaleCheckerDemo/        # Standalone demo — no credentials needed
   backend/                  # FastAPI + SQLite with pre-seeded dummy data (port 8001)
   frontend/                 # React + Vite (shares same UI components)
-  config.yaml               # Demo config (search_days: 365, dummy credentials)
+  config.yaml               # Demo config (search_days: 30, dummy credentials)
   startWashSaleCheckerDemo.sh
 
 backend/
