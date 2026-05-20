@@ -45,6 +45,25 @@ function computeGainLoss(trade, allTrades) {
   return null;
 }
 
+const DATE_FMT = { month: 'short', day: 'numeric', year: 'numeric' };
+
+function fmtDate(str) {
+  if (!str) return '—';
+  // date-only strings (YYYY-MM-DD) must be parsed as local to avoid UTC offset shift
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+    const [y, m, d] = str.split('-').map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString('en-US', DATE_FMT);
+  }
+  return new Date(str).toLocaleDateString('en-US', DATE_FMT);
+}
+
+function formatDateRange(trades) {
+  const dates = trades.map(t => new Date(t.executed_at));
+  const min = new Date(Math.min(...dates));
+  const max = new Date(Math.max(...dates));
+  return `${min.toLocaleDateString('en-US', DATE_FMT)} – ${max.toLocaleDateString('en-US', DATE_FMT)}`;
+}
+
 export default function TradesTable({ trades, symbol }) {
   if (!symbol) return null;
 
@@ -58,6 +77,9 @@ export default function TradesTable({ trades, symbol }) {
 
   return (
     <div className="trades-section">
+      <p className="trades-date-range">
+        Trades between {formatDateRange(trades)}
+      </p>
       <p className="trades-count">
         {trades.length} trade{trades.length !== 1 ? 's' : ''} found
       </p>
@@ -65,10 +87,10 @@ export default function TradesTable({ trades, symbol }) {
         <table className="trades-table">
           <thead>
             <tr>
-              <th>Symbol</th><th>Platform</th><th>Trade Type</th>
-              <th>Option Type</th><th>Strategy</th><th>Action</th>
-              <th>Expiry</th><th>Strike</th><th>Trade Price</th>
-              <th>Qty</th><th>Status</th><th>Realized G/L</th><th>Trade Open Date</th>
+              <th>Symbol</th><th>Trade Type</th>
+              <th>Option / Strategy</th><th>Action</th>
+              <th>Strike</th><th>Trade Price</th>
+              <th>Qty</th><th>Status</th><th>Realized G/L</th><th>Trade Open Date</th><th>Expiry</th>
             </tr>
           </thead>
           <tbody>
@@ -77,22 +99,20 @@ export default function TradesTable({ trades, symbol }) {
               return (
                 <tr key={trade.id} className={`row-status-${trade.status}`}>
                   <td>{trade.symbol}</td>
-                  <td>{trade.platform}</td>
                   <td>{trade.trade_type}</td>
                   <td>
                     {trade.option_type
-                      ? <span className={`badge badge-${trade.option_type}`}>{trade.option_type}</span>
-                      : <span className="badge badge-na">N/A</span>}
-                  </td>
-                  <td>
-                    {trade.strategy
-                      ? <span className={`badge badge-strategy badge-${trade.strategy.replace('_', '-')}`}>
-                          {trade.strategy.replace(/_/g, ' ')}
-                        </span>
+                      ? <>
+                          <span className={`badge badge-${trade.option_type}`}>{trade.option_type}</span>
+                          {trade.strategy && (
+                            <span className={`badge badge-strategy badge-${trade.strategy.replace('_', '-')}`} style={{ marginLeft: 4 }}>
+                              {trade.strategy.replace(/_/g, ' ')}
+                            </span>
+                          )}
+                        </>
                       : '—'}
                   </td>
                   <td className={`side-${trade.side}`}>{getAction(trade)}</td>
-                  <td>{trade.expiration_date ?? '—'}</td>
                   <td>{trade.strike_price != null ? `$${trade.strike_price}` : '—'}</td>
                   <td>${trade.trade_price?.toFixed(2)}</td>
                   <td>{trade.quantity}</td>
@@ -104,7 +124,8 @@ export default function TradesTable({ trades, symbol }) {
                       ? '—'
                       : `${gl >= 0 ? '+' : '-'}$${Math.abs(gl).toFixed(2)}`}
                   </td>
-                  <td>{new Date(trade.executed_at).toLocaleDateString()}</td>
+                  <td>{fmtDate(trade.executed_at)}</td>
+                  <td>{fmtDate(trade.expiration_date)}</td>
                 </tr>
               );
             })}

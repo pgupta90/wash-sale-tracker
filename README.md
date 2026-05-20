@@ -11,7 +11,7 @@ A personal tool to look up recent Robinhood trade history so you can avoid wash 
 - Sync stock and options orders from **Robinhood**
 - Search trades by **symbol**, **expiry date**, and **strike price**
 - Color-coded results table — buy/sell, open/closed, call/put at a glance
-- Configurable search window (default: last 30 days)
+- Configurable search window (default: last 365 days)
 
 ---
 
@@ -28,8 +28,6 @@ The backend syncs trade data from Robinhood into a local SQLite database. The fr
 
 ## Prerequisites
 
-Before running the app, make sure you have the following installed:
-
 | Requirement | Version | Install |
 |---|---|---|
 | Python | 3.9+ | [python.org](https://www.python.org/downloads/) |
@@ -37,7 +35,7 @@ Before running the app, make sure you have the following installed:
 | pip | latest | comes with Python |
 | npm | latest | comes with Node.js |
 
-To verify:
+Verify your versions:
 
 ```bash
 python3 --version    # should be 3.9+
@@ -48,30 +46,22 @@ npm --version
 
 ---
 
-## Setup
+## Quickstart
 
-### 1. Clone and install dependencies
+### 1. Clone the repo
 
 ```bash
 git clone <repo-url>
 cd WashSaleApp
-
-# Backend
-pip3 install -r backend/requirements.txt
-
-# Frontend
-cd frontend && npm install && cd ..
 ```
 
-### 2. Configure credentials
-
-Copy the example config and fill in your Robinhood credentials:
+### 2. Add your credentials
 
 ```bash
 cp config.yaml.example config.yaml
 ```
 
-Edit `config.yaml`:
+Edit `config.yaml` with your Robinhood login:
 
 ```yaml
 robinhood:
@@ -79,28 +69,36 @@ robinhood:
   password: your_password
 
 settings:
-  search_days: 30    # how many days back to search (e.g. 30, 60, 365)
+  search_days: 365    # how many days back to search
 ```
 
 > `config.yaml` is gitignored and never committed.
 
-### 3. Authenticate with Robinhood (one-time)
+### 3. Run the start script
 
 ```bash
-python3 backend/authenticate.py
+bash start.sh
 ```
 
-This opens an interactive prompt. You'll need to:
-1. Approve the login notification on your Robinhood app
-2. Enter your Google Authenticator code (if enabled)
+The script will, in order:
 
-Session tokens are saved to `~/.tokens/robinhood.pickle` and reloaded automatically on each app restart.
+1. **Install** backend and frontend dependencies
+2. **Authenticate** with Robinhood (one-time — you'll approve the login on your phone and enter your 2FA code). Session is saved to `~/.tokens/robinhood.pickle` and reused on every future run.
+3. **Start the backend** on `http://localhost:8000`
+4. **Start the frontend** — Vite will print the URL (usually `http://localhost:5173`)
 
-### 4. Start the app
+> On subsequent runs, step 2 is skipped automatically since the session is already saved.
 
-Open two terminal windows:
+---
+
+## Manual startup (alternative)
+
+If you prefer to run each step yourself:
 
 ```bash
+# One-time: authenticate with Robinhood
+python3 backend/authenticate.py
+
 # Terminal 1 — backend
 python3 -m backend.main
 
@@ -108,15 +106,13 @@ python3 -m backend.main
 cd frontend && npm run dev
 ```
 
-Open **http://localhost:5173** in your browser.
-
 ---
 
 ## Using the App
 
 ### Sync
 
-At the top of the page, click **Sync Now** to pull fresh trade data from Robinhood. The sync fetches the last 60 days of stock and options orders.
+Click **Sync Now** at the top of the page to pull fresh trade data. The sync fetches the last 60 days of stock and options orders from Robinhood.
 
 ### Search
 
@@ -125,7 +121,7 @@ Enter a ticker symbol (required) and optionally filter by:
 - **Expiry** — options expiration date in `YYYY-MM-DD` format (paste directly from the results table)
 - **Strike** — options strike price
 
-Click **Search** to see all matching trades within your configured `search_days` window.
+Results show all matching trades within your configured `search_days` window.
 
 ### Results table
 
@@ -149,7 +145,7 @@ Edit `search_days` in `config.yaml` and restart the backend:
 
 ```yaml
 settings:
-  search_days: 60    # show last 60 days of results
+  search_days: 60
 ```
 
 ---
@@ -157,25 +153,27 @@ settings:
 ## Project Structure
 
 ```
+start.sh               # One-command startup script
+
 backend/
-  authenticate.py    # One-time Robinhood auth script
-  auth.py            # Robinhood session management
-  sync.py            # Robinhood order sync
-  database.py        # SQLite helpers
-  config.py          # Config loader
-  models.py          # Pydantic response models
-  main.py            # FastAPI app entry point
+  authenticate.py      # One-time Robinhood auth script
+  auth.py              # Robinhood session management
+  sync.py              # Robinhood order sync
+  database.py          # SQLite helpers
+  config.py            # Config loader
+  models.py            # Pydantic response models
+  main.py              # FastAPI app entry point
   routes/
-    auth.py          # Auth status endpoint
-    sync.py          # Sync trigger endpoint
-    trades.py        # Trade search endpoint
-  tests/             # pytest test suite
+    auth.py            # Auth status endpoint
+    sync.py            # Sync trigger endpoint
+    trades.py          # Trade search endpoint
+  tests/               # pytest test suite
 
 frontend/
   src/
-    api.js           # Backend API client
-    App.jsx          # Root component
-    App.css          # Styles
+    api.js             # Backend API client
+    App.jsx            # Root component
+    App.css            # Styles
     components/
       AuthBar.jsx        # Robinhood connection status
       RobinhoodModal.jsx # Robinhood login modal
@@ -183,7 +181,7 @@ frontend/
       SearchFilters.jsx  # Symbol/expiry/strike form
       TradesTable.jsx    # Color-coded results table
 
-config.yaml.example  # Template — copy to config.yaml and fill in credentials
+config.yaml.example    # Template — copy to config.yaml and fill in credentials
 ```
 
 ---
@@ -191,7 +189,6 @@ config.yaml.example  # Template — copy to config.yaml and fill in credentials
 ## Running Tests
 
 ```bash
-cd WashSaleApp
 python3 -m pytest backend/tests/
 ```
 
